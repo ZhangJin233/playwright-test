@@ -1,5 +1,6 @@
-import test, { expect } from "@playwright/test";
-import { TodoPage } from "../pages/todo-page";
+import { TodoPage } from "../fixture/todo-page";
+import { test } from "../fixture/base/new-todo";
+import { expect } from "@playwright/test";
 
 test.beforeEach("open Todo page", async ({ page }) => {
   const todoPage = new TodoPage(page);
@@ -28,7 +29,10 @@ test("add multiple todo list", async ({ page }) => {
 
   await addMultipleTodo.addTodo("reading book");
 
-  await expect(addMultipleTodo.todoTitle).toHaveText(["eating food", "reading book"]);
+  await expect(addMultipleTodo.todoTitle).toHaveText([
+    "eating food",
+    "reading book",
+  ]);
 });
 
 test("click complete button for a todo", async ({ page }) => {
@@ -40,7 +44,9 @@ test("click complete button for a todo", async ({ page }) => {
 
   await completeTodo.completeTodo("complete a todo");
 
-  await expect(completeTodo.page.getByTestId("todo-item")).toHaveClass("completed");
+  await expect(completeTodo.page.getByTestId("todo-item")).toHaveClass(
+    "completed",
+  );
 });
 
 test("delete a uncompleted todo list", async ({ page }) => {
@@ -57,29 +63,15 @@ test("delete a uncompleted todo list", async ({ page }) => {
   await expect(deleteUncompletedTodo.todoTitle).toHaveCount(0);
 });
 
-test("select uncompleted todo list", async ({ page }) => {
-  const newTodo = new TodoPage(page);
+test("select uncompleted todo list", async ({ todoPageWithItems }) => {
+  await todoPageWithItems.completeTodo("eating food");
 
-  await newTodo.addTodo("select a uncompleted todo list 1");
+  await todoPageWithItems.showActive();
 
-  await newTodo.addTodo("select a uncompleted todo list 2");
+  await expect(todoPageWithItems.todoTitle).toHaveCount(2);
 
-  await newTodo.addTodo("completed todo list");
-
-  await expect(newTodo.todoTitle).toHaveText([
-    "select a uncompleted todo list 1",
-    "select a uncompleted todo list 2",
-    "completed todo list",
-  ]);
-
-  await newTodo.completeTodo("completed todo list")
-
-  await newTodo.showActive();
-
-  await expect(newTodo.todoTitle).toHaveCount(2);
-
-  await expect(newTodo.todoTitle).toHaveText([
-    "select a uncompleted todo list 1",
-    "select a uncompleted todo list 2",
+  await expect(todoPageWithItems.todoTitle).toHaveText([
+    "learn English",
+    "reading book",
   ]);
 });
